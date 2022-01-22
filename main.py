@@ -1,3 +1,4 @@
+from pygame.event import *
 from utils import *
 from assets.colors import *
 from classes.Chessboard import Chessboard
@@ -22,20 +23,19 @@ def main():
   pygame.display.set_caption("pizzachess")
   screen = pygame.display.set_mode((BOARD_SIZE, BOARD_SIZE))
   # chess setup
-  chessboard.draw_board(screen)
-  chessboard.init_pieces()
-  chessboard.init_squares(SQUARE_NUMBERS, SQUARE_LETTERS)
-  chessboard.draw_starting_pieces(screen)
+  setup_chessboard(chessboard, screen, SQUARE_NUMBERS, SQUARE_LETTERS)
 
   clicked_square = None
+  prev_highlighted_square = None
 
-  # main loop
   while running and not board.is_game_over():
     if board.turn == chess.BLACK:
-      # generate move
-      # make move
-      # display move
-      pass
+      move_uci = get_random_move(board)
+      board.push_uci(move_uci)
+      chessboard.make_move(screen, move_uci, get_en_passant(board))
+      # highlight just moved square
+      chessboard.get_square_from_name(move_uci[2:4]).draw(screen, SQUARE_SIZE, 'j')
+      prev_highlighted_square = chessboard.get_square_from_name(move_uci[2:4])
     else:
       # input move
       for event in pygame.event.get():
@@ -45,15 +45,15 @@ def main():
         if event.type == MOUSEBUTTONDOWN:
           clicked_square = chessboard.get_square(event.pos[0], event.pos[1])
         if event.type == MOUSEBUTTONUP:
-          if chessboard.selected_piece is None: square = clicked_square.name
+          if prev_highlighted_square != None: 
+            prev_highlighted_square.draw(screen, SQUARE_SIZE)
+          if chessboard.selected_piece is None: square = clicked_square.name # handle cases after deselect
           else: square = chessboard.selected_piece.square.name
-          chessboard.handle_click(screen, clicked_square, get_legal_target_squares(square, board))
-      # make move
-      # display move
-      
-      # generate move
-      # make move
-      # display move
+          if chessboard.handle_click(screen, clicked_square, get_legal_target_squares(square, board)):
+            move_uci = chessboard.selected_piece.square.name + clicked_square.name
+            chessboard.make_move(screen, move_uci, get_en_passant(board))
+            board.push_uci(move_uci)
+            chessboard.selected_piece = None
     pygame.display.flip()
   else:
     print(board.outcome())

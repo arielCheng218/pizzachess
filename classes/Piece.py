@@ -12,4 +12,3 @@ class Piece:
     screen.blit(self.image, (x, y))
     if square != None:
       self.square = square
-    pygame.display.update()

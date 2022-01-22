@@ -24,7 +24,6 @@ class Chessboard:
         if light: color = LIGHT; self.square_colors.append(True)
         else: color = DARK; self.square_colors.append(False)
         pygame.draw.rect(screen, color, pygame.Rect((x, y, x + self.SQUARE_SIZE, y + self.SQUARE_SIZE)))
-    pygame.display.flip()
 
   def init_pieces(self):
     id = 0
@@ -72,10 +71,51 @@ class Chessboard:
       self.selected_piece = square.piece
       square.draw(screen, self.SQUARE_SIZE, 's')
       self.draw_legal_squares(screen, legal_squares, reverse=False)
-    elif square.name in legal_square_names:
-      print(square.name, " is legal move")
-      pass
-    else:
+    elif self.selected_piece != None:
       self.selected_piece.square.draw(screen, self.SQUARE_SIZE)
       self.draw_legal_squares(screen, legal_squares, reverse=True)
+      if square.name in legal_square_names:
+        return True
       self.selected_piece = None
+
+  def make_move(self, screen, uci, en_passant):
+    start_square = self.get_square_from_name(uci[:2])
+    end_square = self.get_square_from_name(uci[2:4])
+    self.handle_castling(screen, uci) # make extra rook move if needed
+    self.check_en_passant(screen, uci, en_passant) # remove pawn if needed
+    self.handle_promotion(screen, uci)
+    # remove piece at start square
+    start_square.piece.square = end_square
+    # check if there is piece at end square
+    if end_square.piece != None:
+      self.pieces.remove(end_square.piece)
+    end_square.piece = start_square.piece
+    start_square.piece = None
+    start_square.draw(screen, self.SQUARE_SIZE)
+    end_square.draw(screen, self.SQUARE_SIZE)
+
+  def handle_castling(self, screen, uci):
+    castling_uci = ["e1g1", "e1c1", "e8g8", "e8c8"]
+    if uci in castling_uci and self.get_square_from_name(uci[:2]).piece != None:
+      if 'K' in self.get_square_from_name(uci[:2]).piece.name:
+        rook_uci = ["h1f1", "a1d1", "h8f8", "h8d8"]
+        self.make_move(screen, rook_uci[castling_uci.index(uci)], None)
+
+  def check_en_passant(self, screen, uci, en_passant):
+    if en_passant != None:
+      from_square = uci[:2]
+      to_square = uci[2:4]
+      if to_square == en_passant and "P" in self.get_square_from_name(from_square).piece.name:
+        # move is en passant
+        if self.get_square_from_name(from_square).piece.color == "w":
+          capture_square = self.get_square_from_name(to_square[0] + str(int(to_square[1]) - 1))
+        else:
+          capture_square = self.get_square_from_name(to_square[0] + str(int(to_square[1]) + 1))
+        # remove piece at capture square
+        capture_square.piece.square = None
+        self.pieces.remove(capture_square.piece)
+        capture_square.piece = None
+        capture_square.draw(screen, self.SQUARE_SIZE)
+
+  def handle_promotion(self, screen, uci):
+    pass
