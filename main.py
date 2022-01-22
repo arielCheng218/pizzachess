@@ -26,11 +26,8 @@ def main():
   chessboard.init_pieces()
   chessboard.init_squares(SQUARE_NUMBERS, SQUARE_LETTERS)
   chessboard.draw_starting_pieces(screen)
-  # state
-  select = False
-  selected_piece = None
-  start_square = None
-  target_square = None
+
+  clicked_square = None
 
   # main loop
   while running and not board.is_game_over():
@@ -40,37 +37,17 @@ def main():
       # display move
       pass
     else:
-      # chessboard.squares[0].draw(screen, LIGHT_LEGAL_SQUARE, SQUARE_SIZE)
       # input move
       for event in pygame.event.get():
         if event.type == pygame.QUIT:
           running = False
           pygame.quit()
         if event.type == MOUSEBUTTONDOWN:
-          if not select:
-            start_square = chessboard.get_square(event.pos[0], event.pos[1])
-          if not start_square.piece is None:
-            select = not select
-            selected_piece = start_square.piece
-            print(selected_piece.name)
+          clicked_square = chessboard.get_square(event.pos[0], event.pos[1])
         if event.type == MOUSEBUTTONUP:
-          if select:
-            for square_name in get_legal_target_squares(start_square, board):
-              i = SQUARE_NAMES.index(square_name)
-              square = chessboard.squares[i]
-              if square.is_light:
-                square.draw(screen, LIGHT_LEGAL_SQUARE, SQUARE_SIZE)
-              else:
-                square.draw(screen, DARK_LEGAL_SQUARE, SQUARE_SIZE)
-          else:
-            for square_name in get_legal_target_squares(start_square, board):
-              i = SQUARE_NAMES.index(square_name)
-              square = chessboard.squares[i]
-              if square.is_light:
-                square.draw(screen, LIGHT, SQUARE_SIZE)
-              else:
-                square.draw(screen, DARK, SQUARE_SIZE)
-
+          if chessboard.selected_piece is None: square = clicked_square.name
+          else: square = chessboard.selected_piece.square.name
+          chessboard.handle_click(screen, clicked_square, get_legal_target_squares(square, board))
       # make move
       # display move
       

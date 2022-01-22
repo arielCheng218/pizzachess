@@ -12,6 +12,7 @@ class Chessboard:
     self.pieces = []
     self.squares = []
     self.square_colors = []
+    self.selected_piece = None
     self.fen = fen
 
   def draw_board(self, screen):
@@ -54,3 +55,27 @@ class Chessboard:
     for square in self.squares:
       if x >= square.x and y >= square.y and x <= square.x + self.SQUARE_SIZE and y <= square.y + self.SQUARE_SIZE:
         return square
+  
+  def get_square_from_name(self, name):
+    i = self.SQUARE_NAMES.index(name)
+    return self.squares[i]
+
+  def draw_legal_squares(self, screen, legal_squares, reverse):
+    type = None
+    if not reverse: type = 'l'
+    for square in legal_squares:
+      square.draw(screen, self.SQUARE_SIZE, type)
+
+  def handle_click(self, screen, square, legal_square_names):
+    legal_squares = [self.get_square_from_name(x) for x in legal_square_names]
+    if self.selected_piece is None and not square.piece is None and square.piece != self.selected_piece:
+      self.selected_piece = square.piece
+      square.draw(screen, self.SQUARE_SIZE, 's')
+      self.draw_legal_squares(screen, legal_squares, reverse=False)
+    elif square.name in legal_square_names:
+      print(square.name, " is legal move")
+      pass
+    else:
+      self.selected_piece.square.draw(screen, self.SQUARE_SIZE)
+      self.draw_legal_squares(screen, legal_squares, reverse=True)
+      self.selected_piece = None
