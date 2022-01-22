@@ -51,8 +51,9 @@ def main():
           else: square = chessboard.selected_piece.square.name
           if chessboard.handle_click(screen, clicked_square, get_legal_target_squares(square, board)):
             move_uci = chessboard.selected_piece.square.name + clicked_square.name
-            chessboard.make_move(screen, move_uci, get_en_passant(board))
+            move_uci += chessboard.handle_promotion(move_uci)
             board.push_uci(move_uci)
+            chessboard.make_move(screen, move_uci[:4], get_en_passant(board))
             chessboard.selected_piece = None
     pygame.display.flip()
   else:

@@ -14,6 +14,7 @@ class Chessboard:
     self.square_colors = []
     self.selected_piece = None
     self.fen = fen
+    self.piece_count = 100
 
   def draw_board(self, screen):
     light = True
@@ -83,7 +84,6 @@ class Chessboard:
     end_square = self.get_square_from_name(uci[2:4])
     self.handle_castling(screen, uci) # make extra rook move if needed
     self.check_en_passant(screen, uci, en_passant) # remove pawn if needed
-    self.handle_promotion(screen, uci)
     # remove piece at start square
     start_square.piece.square = end_square
     # check if there is piece at end square
@@ -103,19 +103,37 @@ class Chessboard:
 
   def check_en_passant(self, screen, uci, en_passant):
     if en_passant != None:
-      from_square = uci[:2]
-      to_square = uci[2:4]
-      if to_square == en_passant and "P" in self.get_square_from_name(from_square).piece.name:
+      from_square = self.get_square_from_name(uci[:2])
+      to_square = self.get_square_from_name(uci[2:4])
+      if to_square == en_passant and "P" in from_square.piece.name:
         # move is en passant
-        if self.get_square_from_name(from_square).piece.color == "w":
-          capture_square = self.get_square_from_name(to_square[0] + str(int(to_square[1]) - 1))
+        if from_square.piece.color == "w":
+          capture_square = self.get_square_from_name(to_square.name[0] + str(int(to_square.name[1]) - 1))
         else:
-          capture_square = self.get_square_from_name(to_square[0] + str(int(to_square[1]) + 1))
+          capture_square = self.get_square_from_name(to_square.name[0] + str(int(to_square.name[1]) + 1))
         # remove piece at capture square
         capture_square.piece.square = None
         self.pieces.remove(capture_square.piece)
         capture_square.piece = None
         capture_square.draw(screen, self.SQUARE_SIZE)
 
-  def handle_promotion(self, screen, uci):
-    pass
+  def handle_promotion(self, uci):
+    from_square = self.get_square_from_name(uci[:2])
+    to_square = self.get_square_from_name(uci[2:4])
+    if from_square.piece == None: 
+      return ''
+    if from_square.piece.color == 'w' and to_square.name[1] == '8' and 'P' in from_square.piece.name:
+      print("white promote")
+      queen = Piece(f'bQ{self.piece_count}', 'w', 'assets/pieces/wQ.png', from_square)
+      self.pieces[self.pieces.index(from_square.piece)] = queen
+      from_square.piece = queen
+      self.piece_count += 1
+      return 'q'
+    elif from_square.piece.color == 'b' and to_square.name[1] == '1' and 'P' in from_square.piece.name:
+      print("black promote")
+      queen = Piece(f'bQ{self.piece_count}', 'b', 'assets/pieces/bQ.png', from_square)
+      self.pieces[self.pieces.index(from_square.piece)] = queen
+      from_square.piece = queen
+      self.piece_count += 1
+      return 'q'
+    return ''
