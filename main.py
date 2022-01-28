@@ -1,10 +1,11 @@
+import chess
 from pygame.event import *
+from pygame.locals import *
+import pygame
 from utils import *
 from assets.colors import *
 from classes.Chessboard import Chessboard
-import chess
-import pygame
-from pygame.locals import *
+from search import *
 
 # constants
 BOARD_SIZE = 600
@@ -17,7 +18,7 @@ def main():
   # globals
   running = True
   board = chess.Board()
-  chessboard = Chessboard(BOARD_SIZE, SQUARE_SIZE, SQUARE_NAMES, board.fen)
+  chessboard = Chessboard(BOARD_SIZE, SQUARE_SIZE, SQUARE_NAMES)
   # pygame setup
   pygame.init()
   pygame.display.set_caption("pizzachess")
@@ -30,7 +31,7 @@ def main():
 
   while running and not board.is_game_over():
     if board.turn == chess.BLACK:
-      move_uci = get_random_move(board)
+      move_uci = choose_move(board, 2, -1)
       board.push_uci(move_uci)
       chessboard.make_move(screen, move_uci, get_en_passant(board))
       # highlight just moved square

@@ -5,7 +5,7 @@ from assets.colors import *
 
 class Chessboard:
 
-  def __init__(self, BOARD_SIZE, SQUARE_SIZE, SQUARE_NAMES, fen):
+  def __init__(self, BOARD_SIZE, SQUARE_SIZE, SQUARE_NAMES):
     self.BOARD_SIZE = BOARD_SIZE
     self.SQUARE_SIZE = SQUARE_SIZE
     self.SQUARE_NAMES = SQUARE_NAMES
@@ -13,7 +13,6 @@ class Chessboard:
     self.squares = []
     self.square_colors = []
     self.selected_piece = None
-    self.fen = fen
     self.piece_count = 100
 
   def draw_board(self, screen):
